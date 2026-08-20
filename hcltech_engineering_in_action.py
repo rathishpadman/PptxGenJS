@@ -178,6 +178,16 @@ def glyph(name, cx, cy, s, color):
             shape(MSO_SHAPE.ROUNDED_RECTANGLE, cx + s * dx, cy + u * .28,
                   s * .16, s * .16, fill=color, adj=0.25)
         rule(cx - s * .24, cy + u * .08, s * .48, color, lw * .85)
+    elif name == 'gear':
+        shape(MSO_SHAPE.GEAR_6, cx - u * .86, cy - u * .86, s * .86, s * .86,
+              line=color, line_w=lw)
+        shape(MSO_SHAPE.OVAL, cx - u * .24, cy - u * .24, s * .24, s * .24,
+              line=color, line_w=lw)
+    elif name == 'cycle':
+        shape(MSO_SHAPE.OVAL, cx - u * .74, cy - u * .74, s * .74, s * .74,
+              line=color, line_w=lw)
+        shape(MSO_SHAPE.ISOSCELES_TRIANGLE, cx + u * .18, cy - u * .60,
+              s * .30, s * .26, fill=color, rot=90)
     elif name == 'cubes':
         shape(MSO_SHAPE.ROUNDED_RECTANGLE, cx - s * .15, cy - u * .82,
               s * .30, s * .30, fill=color, adj=0.22)
@@ -232,7 +242,11 @@ def build(spec):
     # ---------------- left: numbered journey ------------------------
     label_box(LX, 4.82, 3.0, 0.24, spec['journey_label'], 11, PURPLE,
               align=PP_ALIGN.LEFT)
-    step_w, gap = 1.10, 0.26
+    n = len(spec['steps'])
+    gap = 0.26 if n <= 5 else 0.18
+    step_w = (LW - (n - 1) * gap) / n
+    dia = min(0.62, step_w * 0.58)
+    lab_pt = 9.5 if n <= 5 else 8.5
     for i, (icon, name) in enumerate(spec['steps']):
         cx = LX + step_w / 2 + i * (step_w + gap)
         badge = shape(MSO_SHAPE.OVAL, cx - 0.12, 5.16, 0.24, 0.24, fill=PURPLE)
@@ -240,11 +254,11 @@ def build(spec):
         badge.text_frame.margin_top = badge.text_frame.margin_bottom = 0
         fill_tf(badge.text_frame, [[(str(i + 1), 9, True, WHITE)]],
                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        shape(MSO_SHAPE.OVAL, cx - 0.31, 5.48, 0.62, 0.62, fill=GREY_4)
-        glyph(icon, cx, 5.79, 0.32, PURPLE)
-        label_box(cx - step_w / 2, 6.18, step_w, 0.44, name, 9.5, BLACK,
+        shape(MSO_SHAPE.OVAL, cx - dia / 2, 5.79 - dia / 2, dia, dia, fill=GREY_4)
+        glyph(icon, cx, 5.79, dia * 0.52, PURPLE)
+        label_box(cx - step_w / 2, 6.16, step_w, 0.46, name, lab_pt, BLACK,
                   bold=False)
-        if i < 4:
+        if i < n - 1:
             ax = cx + step_w / 2 + gap / 2
             poly([(ax - 0.07, 5.79), (ax + 0.07, 5.79)], GREY_1, 1.0)
             poly([(ax + 0.02, 5.74), (ax + 0.07, 5.79), (ax + 0.02, 5.84)],
@@ -262,7 +276,8 @@ def build(spec):
     shape(MSO_SHAPE.OVAL, CX_, 0.72, 0.50, 0.50, fill=LAVENDER)
     glyph(spec['panel_icon'], CX_ + 0.25, 0.97, 0.26, WHITE)
     textbox(CX_ + 0.66, 0.72, CW_ - 0.66, 0.50,
-            [('BUSINESS OUTCOMES', 18, True, WHITE)], anchor=MSO_ANCHOR.MIDDLE)
+            [(spec.get('panel_title', 'BUSINESS OUTCOMES'), 18, True, WHITE)],
+            anchor=MSO_ANCHOR.MIDDLE)
     rule(CX_, 1.40, CW_, LAVENDER)
 
     head = spec['headline']
@@ -270,11 +285,13 @@ def build(spec):
         textbox(CX_, 1.54, CW_, 0.60, [(head['text'], 11, False, PERIWINKLE)],
                 anchor=MSO_ANCHOR.MIDDLE)
     else:
-        textbox(CX_, 1.52, 1.30, 0.66, [(head['big'], 36, True, WHITE)],
+        bw = head.get('big_w', 1.30)
+        textbox(CX_, 1.52, bw, 0.66,
+                [(head['big'], head.get('big_size', 36), True, WHITE)],
                 anchor=MSO_ANCHOR.MIDDLE)
-        poly([(CX_ + 1.34, 1.54), (CX_ + 1.34, 2.20)], LAVENDER, 0.75)
-        textbox(CX_ + 1.50, 1.50, CW_ - 1.50, 0.70,
-                [[(head['text'], 13, True, WHITE)],
+        poly([(CX_ + bw + 0.04, 1.54), (CX_ + bw + 0.04, 2.20)], LAVENDER, 0.75)
+        textbox(CX_ + bw + 0.20, 1.50, CW_ - bw - 0.20, 0.70,
+                [[(head['text'], head.get('text_size', 13), True, WHITE)],
                  [(head['sub'], 9.5, False, PERIWINKLE)]],
                 anchor=MSO_ANCHOR.MIDDLE, space_after=2)
 
@@ -282,7 +299,8 @@ def build(spec):
     for i, (num, lab, sub) in enumerate(spec['tiles']):
         tx = CX_ + (i % 2) * (tw + 0.12)
         ty = 2.38 + (i // 2) * (th + 0.15)
-        textbox(tx, ty + 0.06, tw, 0.54, [(num, 34, True, WHITE)],
+        textbox(tx, ty + 0.06, tw, 0.54,
+                [(num, 34 if len(num) <= 5 else 25, True, WHITE)],
                 anchor=MSO_ANCHOR.MIDDLE)
         textbox(tx, ty + 0.64, tw, 0.24, [(lab, 11.5, True, WHITE)])
         textbox(tx, ty + 0.90, tw - 0.10, 0.46, [(sub, 9, False, PERIWINKLE)],
@@ -357,7 +375,65 @@ GUARDIAN = {
               ('shield', 'Agent Governance'), ('chart_up', 'Repeatable Model')],
 }
 
+UIPATH = {
+    'title': [('Engineering UiPath — ', BLACK),
+              ('and reusing it in DPO', PURPLE)],
+    'subtitle': '193 engineers across 120+ customer estates turn product work '
+                'into reusable agent IP.',
+    'rows': [
+        ('cubes', 'Our Position',
+         "Engineering UiPath's platform and customer deployments"),
+        ('people', 'Our Scale', '193 engineers, 120+ customer estates'),
+        ('shield', 'Our Advantage', 'Production agent patterns reused in DPO'),
+    ],
+    'journey_label': 'OUR APPROACH',
+    'steps': [('gear', 'Engineer'), ('arrow_up', 'Deploy'), ('search', 'Learn'),
+              ('cycle', 'Reuse'), ('chart_up', 'Scale')],
+    'panel_title': 'THE AI 360 ADVANTAGE',
+    'panel_icon': 'target',
+    'headline': {'kind': 'hero', 'big': '3-in-1', 'big_w': 1.55, 'big_size': 28,
+                 'text_size': 11.5,
+                 'text': 'Product Engineering + Customer Delivery + DPO Reuse',
+                 'sub': 'One team, three advantages'},
+    'tiles': [('120+', 'Customer Estates', 'Live UiPath deployments'),
+              ('193', 'Platform Engineers', 'Product build plus delivery'),
+              ('65+', 'Production Agents', 'Patterns available for reuse'),
+              ('10', 'Industry Clusters', 'Coverage across verticals')],
+    'strip': [('cubes', 'Product Influence'), ('people', 'Customer Proximity'),
+              ('nodes', 'Reusable Agent IP'), ('chart_up', 'DPO Scale')],
+}
+
+GOOGLE = {
+    'title': [('Quote-to-book, zero touch: ', BLACK),
+              ('~90 checks to none', PURPLE)],
+    'subtitle': 'Google: OPUS IP automates validation, reconciliation and '
+                'booking across 10+ enterprise systems.',
+    'rows': [
+        ('target', 'The Challenge',
+         'Manual validation across 10+ systems, ~90 checks'),
+        ('arrow_up', 'The Objective',
+         'Zero-touch validation, reconciliation, booking, exceptions'),
+        ('bulb', 'The Solution', 'OPUS IP — AI-driven automation on Google Cloud'),
+    ],
+    'journey_label': 'HOW IT WORKS',
+    'steps': [('doc', 'Case Intake'), ('search', 'Intelligent Validation'),
+              ('database', 'Reconciliation'), ('checklist', 'Booking Automation'),
+              ('target', 'Exception Handling'), ('shield', 'Audit & Reporting')],
+    'panel_title': 'THE IMPACT',
+    'panel_icon': 'chart_up',
+    'headline': {'kind': 'caption',
+                 'text': 'OPUS IP delivered a scalable, zero-touch operations framework'},
+    'tiles': [('~90 → 0', 'Manual Checks', 'Validation steps eliminated'),
+              ('~120 → 25', 'Minutes', 'Overall processing time'),
+              ('5X', 'Throughput', 'Orders processed per run'),
+              ('90%+', 'Seller Experience', 'Satisfaction score')],
+    'strip': [('arrow_up', 'Faster Cycle Time'), ('chart_up', 'Lower Ops Effort'),
+              ('target', 'Higher Accuracy'), ('people', 'Better Seller Experience')],
+}
+
 build(BOI)
 build(GUARDIAN)
+build(UIPATH)
+build(GOOGLE)
 prs.save(OUT)
 print('saved', OUT, '| slides:', len(prs.slides._sldIdLst))
