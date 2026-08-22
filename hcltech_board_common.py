@@ -193,6 +193,10 @@ def glyph(name, cx, cy, s, color):
         for dx in (-.38, .08):
             shape(MSO_SHAPE.ROUNDED_RECTANGLE, cx + dx * s, cy + .04 * s,
                   .30 * s, .30 * s, fill=color, adj=0.22)
+    elif name == 'database':
+        for i in range(3):
+            shape(MSO_SHAPE.OVAL, cx - .38 * s, cy - .44 * s + i * .32 * s,
+                  .76 * s, .28 * s, line=color, line_w=lw)
     elif name == 'cube':
         shape(MSO_SHAPE.CUBE, cx - .42 * s, cy - .42 * s, .84 * s, .84 * s,
               line=color, line_w=lw)
