@@ -236,6 +236,17 @@ def glyph(name, cx, cy, s, color):
         for dx in (-.18, .18):
             shape(MSO_SHAPE.OVAL, cx + dx * s - .30 * s, cy - .30 * s,
                   .60 * s, .60 * s, line=color, line_w=lw)
+    elif name == 'doc':
+        shape(MSO_SHAPE.ROUNDED_RECTANGLE, cx - .34 * s, cy - .46 * s,
+              .68 * s, .92 * s, line=color, line_w=lw, adj=0.12)
+        for i in range(3):
+            poly([(cx - .18 * s, cy - .18 * s + i * .20 * s),
+                  (cx + .18 * s, cy - .18 * s + i * .20 * s)], color, lw * .8)
+    elif name == 'search':
+        shape(MSO_SHAPE.OVAL, cx - .44 * s, cy - .44 * s, .64 * s, .64 * s,
+              line=color, line_w=lw)
+        poly([(cx + .16 * s, cy + .16 * s), (cx + .46 * s, cy + .46 * s)],
+             color, lw * 1.2)
     elif name == 'trophy':
         shape(MSO_SHAPE.ROUND_2_DIAG_RECTANGLE, cx - .28 * s, cy - .44 * s,
               .56 * s, .48 * s, fill=color, adj=(0.5, 0.0))
